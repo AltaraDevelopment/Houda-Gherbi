@@ -203,28 +203,40 @@
     <a class="fab" id="saveContactBtn" href="#" title="Save contact">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/><path d="M16 11h6M19 8v6"/></svg>
     </a>
-    <script>
-      (function(){
-        var vcard = "BEGIN:VCARD\r\nVERSION:3.0\r\nN:Gherbi;Houda;;;\r\nFN:Houda Gherbi\r\nORG:Altara Advanced Contracting L.L.C\r\nTITLE:Procurement Engineer\r\nTEL;TYPE=CELL:+971545089838\r\nEMAIL:houda.g@altaragcc.com\r\nURL:https://altaragcc.com\r\nEND:VCARD\r\n";
-        var btn = document.getElementById('saveContactBtn');
-        var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+   <script>
+      (function () {
+        const vcard = [
+          'BEGIN:VCARD',
+          'VERSION:3.0',
+          'N:Gherbi;Houda;;;',
+          'FN:Houda Gherbi',
+          'ORG:Altara Advanced Contracting L.L.C',
+          'TITLE:Procurement Engineer',
+          'TEL;TYPE=CELL:+971545089838',
+          'EMAIL:houda.g@altaragcc.com',
+          'URL:https://altaragcc.com',
+          'END:VCARD', ''
+        ].join('\r\n');
+        const button = document.getElementById('saveContactBtn');
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+          (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        const blob = new Blob([vcard], { type: 'text/vcard' });
+        const blobUrl = URL.createObjectURL(blob);
+        button.href = blobUrl;
+        button.setAttribute('download', 'Houda_Gherbi.vcf');
+        // Safari iOS may ignore the download attribute. Let Safari handle
+        // the VCF blob as a document rather than invoking the share sheet.
         if (isIOS) {
-          // iOS Safari recognizes a direct data-URI navigation as a vCard and opens the Add Contact sheet
-          btn.setAttribute('href', 'data:text/vcard;charset=utf-8,' + encodeURIComponent(vcard));
-        } else {
-          btn.addEventListener('click', function(e){
-            e.preventDefault();
-            var blob = new Blob([vcard], { type: "text/vcard;charset=utf-8" });
-            var url = URL.createObjectURL(blob);
-            var a = document.createElement('a');
-            a.href = url;
-            a.download = "Houda_Gherbi.vcf";
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            setTimeout(function(){ URL.revokeObjectURL(url); }, 2000);
+          button.removeAttribute('download');
+          button.addEventListener('click', function (event) {
+            event.preventDefault();
+            window.location.assign(blobUrl);
           });
         }
+        window.addEventListener('pagehide', function () {
+          // Keep the object URL valid long enough for iOS to open the file.
+          setTimeout(function () { URL.revokeObjectURL(blobUrl); }, 60000);
+        }, { once: true });
       })();
     </script>
 
